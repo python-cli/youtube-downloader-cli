@@ -1,0 +1,5 @@
+click==7.0
+coloredlogs==10.0
+configparser==4.0.2
+peewee==3.11.2
+youtube-dl==2020.1.15
