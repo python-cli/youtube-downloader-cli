@@ -1,12 +1,44 @@
 from __future__ import unicode_literals
 from youtube_dl import YoutubeDL
 from youtube_dl.utils import DownloadError
+from urllib.parse import urlparse
 from .config import *
 from .logger import *
 from .models import *
 import os
+import requests
 
 logger = getLogger(__name__)
+
+def download_cover(url, output_dir, prefix, default_extension):
+    try:
+        _, filename = os.path.split(urlparse(url).path)
+
+        if '.' in filename:
+            filename = '%s-%s' % (prefix, filename)
+        else:
+            filename = '%s-%s.%s' % (prefix, filename, default_extension)
+
+        filepath = os.path.join(output_dir, filename)
+
+        if exists(filepath):
+            logger.info('Found existing file here, reusing it...')
+            return filepath, filename
+
+        logger.info('Downloading %s' % url)
+        response = requests.get(url, proxies={
+            'http': get_proxy(),
+            'https': get_proxy(),
+            })
+        logger.info('Downloaded to %s' % filepath)
+
+        with open(filepath, 'wb') as f:
+            f.write(response.content)
+    except requests.RequestException as e:
+        logger.exception(e)
+        filepath = None
+
+    return filepath, filename
 
 def parse(url, download=False):
     results = []
@@ -59,6 +91,11 @@ def parse(url, download=False):
                 if output_filename:
                     video.filename = output_filename
                     video.total_bytes = output_total_bytes
+                    video.save()
+
+                if 'http' in video.thumbnail:
+                    _, filename = download_cover(video.thumbnail, get_storage_path(), video.id, 'jpg')
+                    video.thumbnail = filename
                     video.save()
 
                 results.append(video)
