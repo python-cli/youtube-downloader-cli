@@ -81,9 +81,14 @@ def parse(url, download=False):
                 for entry in meta.get('entries'):
                     video_id = entry.get('id')
                     video_url = 'https://youtu.be/%s' % video_id
-                    results.append(parse(video_url, download))
+
+                    for video in parse(video_url, download):
+                        video.playlist = playlist
+                        video.save()
+                        results.append(video)
             elif extractor == 'youtube:user':
-                results.extend(parse(meta.get('url'), download))
+                videos = parse(meta.get('url'), download)
+                results.extend(videos)
             elif extractor == 'youtube':
                 video = Video.initialize(meta)
                 logger.info('Video: %s', video)
@@ -104,6 +109,7 @@ def parse(url, download=False):
     except DownloadError as e:
         logger.exception(e)
         logger.warning('Retry to parse URL: %s' % url)
-        parse(url, download)
+
+        results = parse(url, download)
 
     return results

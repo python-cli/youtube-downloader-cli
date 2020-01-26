@@ -1,10 +1,18 @@
 from peewee import *
 from playhouse.sqlite_ext import *
+from os.path import exists
+from enum import IntFlag
 from .config import pretty_json_string, DATABASE_FILE
 from .logger import getLogger
 
 _db = SqliteDatabase(DATABASE_FILE)
 logger = getLogger(__name__)
+
+class VideoPlatformFlag(IntFlag):
+    'All kinds of platform flags.'
+    Acfun = 1 << 0
+    Bilibili = 1 << 1
+    Youtube = 1 << 2
 
 
 class PeeweeModel(Model):
@@ -13,6 +21,7 @@ class PeeweeModel(Model):
 
     @classmethod
     def initialize(cls, data):
+        'Generic initializer.'
         assert(isinstance(data, dict))
 
 class Uploader(PeeweeModel):
@@ -119,6 +128,20 @@ class Video(PeeweeModel):
 
         item.save()
         return item
+
+    def check_for_upload(self, flag):
+        'Check condition for upload.'
+
+        if not (self.thumbnail and exists(self.thumbnail)):
+            return False, 'Invalid video thumbnail!'
+
+        if not (self.filename and exists(self.filename)):
+            return False, 'Invalid video file!'
+
+        if self.upload_flags & flag.value != 0:
+            return False, 'This video has been uploaded to [%s]!' % flag.name
+
+        return True, None
 
 _db.connect()
 _db.create_tables([
