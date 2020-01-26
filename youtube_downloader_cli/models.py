@@ -1,8 +1,8 @@
 from peewee import *
 from playhouse.sqlite_ext import *
-from os.path import exists
+from os.path import exists, join
 from enum import IntFlag
-from .config import pretty_json_string, DATABASE_FILE
+from .config import get_storage_path, DATABASE_FILE
 from .logger import getLogger
 
 _db = SqliteDatabase(DATABASE_FILE)
@@ -132,10 +132,13 @@ class Video(PeeweeModel):
     def check_for_upload(self, flag):
         'Check condition for upload.'
 
-        if not (self.thumbnail and exists(self.thumbnail)):
+        def check_existence(file):
+            return file and exists(join(get_storage_path(), file))
+
+        if not check_existence(self.thumbnail):
             return False, 'Invalid video thumbnail!'
 
-        if not (self.filename and exists(self.filename)):
+        if not check_existence(self.filename):
             return False, 'Invalid video file!'
 
         if self.upload_flags & flag.value != 0:
