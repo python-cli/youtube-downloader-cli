@@ -93,7 +93,6 @@ class Video(PeeweeModel):
 
     filename = CharField(null=True)
     total_bytes = BigIntegerField(null=True, default=0)
-    upload_flags = BigIntegerField(null=True, default=0)
 
     uploader = ForeignKeyField(Uploader, backref='videos', null=True)
     playlist = ForeignKeyField(Playlist, backref='videos', null=True)
@@ -140,9 +139,6 @@ class Video(PeeweeModel):
 
         if not check_existence(self.filename):
             return False, 'Invalid video file!'
-
-        if self.upload_flags & flag.value != 0:
-            return False, 'This video has been uploaded to [%s]!' % flag.name
 
         return True, None
 
