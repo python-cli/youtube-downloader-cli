@@ -5,7 +5,7 @@ from enum import IntFlag
 from .config import get_storage_path, DATABASE_FILE
 from .logger import getLogger
 
-_db = SqliteDatabase(DATABASE_FILE)
+SQLITE_DB = SqliteDatabase(DATABASE_FILE)
 logger = getLogger(__name__)
 
 class VideoPlatformFlag(IntFlag):
@@ -17,7 +17,7 @@ class VideoPlatformFlag(IntFlag):
 
 class PeeweeModel(Model):
     class Meta:
-        database = _db
+        database = SQLITE_DB
 
     @classmethod
     def initialize(cls, data):
@@ -146,8 +146,8 @@ class Video(PeeweeModel):
 
         return True, None
 
-_db.connect()
-_db.create_tables([
+SQLITE_DB.connect()
+SQLITE_DB.create_tables([
     Uploader,
     Playlist,
     Video,
