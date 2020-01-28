@@ -56,7 +56,7 @@ def parse(url, download=False):
             output_total_bytes = d.get('total_bytes')
 
     ydl_opts = {
-        'format': 'worst', # for debugging
+        # 'format': 'worst', # for debugging
         'logger': logger,
         'progress_hooks': [progress],
         'proxy': get_proxy(),
