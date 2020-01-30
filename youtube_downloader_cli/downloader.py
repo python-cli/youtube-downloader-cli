@@ -86,7 +86,7 @@ def parse(url, download=False):
                         video.playlist = playlist
                         video.save()
                         results.append(video)
-            elif extractor == 'youtube:user':
+            elif extractor == 'youtube:channel' or extractor == 'youtube:user':
                 videos = parse(meta.get('url'), download)
                 results.extend(videos)
             elif extractor == 'youtube':
