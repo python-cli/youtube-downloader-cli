@@ -3,10 +3,8 @@ from playhouse.sqlite_ext import *
 from os.path import exists, join
 from enum import IntFlag
 from .config import get_storage_path, DATABASE_FILE
-from .logger import getLogger
 
 SQLITE_DB = SqliteDatabase(DATABASE_FILE)
-logger = getLogger(__name__)
 
 class VideoPlatformFlag(IntFlag):
     'All kinds of platform flags.'

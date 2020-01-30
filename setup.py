@@ -22,7 +22,6 @@ setup(
     packages=['youtube_downloader_cli'],
     install_requires=[
         'click==7.0',
-        'coloredlogs==10.0',
         'configparser==4.0.2',
         'peewee==3.11.2',
         'requests==2.22.0',

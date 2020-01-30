@@ -3,12 +3,12 @@ from youtube_dl import YoutubeDL
 from youtube_dl.utils import DownloadError
 from urllib.parse import urlparse
 from .config import *
-from .logger import *
 from .models import *
 import os
 import requests
+import logging
 
-logger = getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 def download_cover(url, output_dir, prefix, default_extension):
     try:
@@ -56,7 +56,7 @@ def parse(url, download=False):
             output_total_bytes = d.get('total_bytes')
 
     ydl_opts = {
-        # 'format': 'worst', # for debugging
+        'format': 'worst' if __debug__ else 'best',
         'logger': logger,
         'progress_hooks': [progress],
         'proxy': get_proxy(),
