@@ -10,6 +10,9 @@ logger = logging.getLogger(__name__)
 def translate2chinese(text, retry=10):
     '''Translate the text to simplified chinese text.'''
 
+    if not (text and len(text) > 0):
+        return None
+
     translator = googletrans.Translator(proxies={
         'http': get_proxy(),
         'https': get_proxy(),

@@ -120,7 +120,6 @@ class Video(PeeweeModel):
         item.description = data.get('description')
         item.categories = data.get('categories')
         item.tags = data.get('tags')
-        item.description = data.get('description')
         item.uploader = Uploader.initialize(data)
 
         item.save()

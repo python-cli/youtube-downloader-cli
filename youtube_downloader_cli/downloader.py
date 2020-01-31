@@ -40,7 +40,7 @@ def download_cover(url, output_dir, prefix, default_extension):
 
     return filepath, filename
 
-def parse(url, download=False):
+def parse(url, download=False, retry=10):
     results = []
 
     output_filename, output_total_bytes = None, None
@@ -108,8 +108,9 @@ def parse(url, download=False):
                 logger.warning('Unknown extractor: %s' % extractor)
     except DownloadError as e:
         logger.exception(e)
-        logger.warning('Retry to parse URL: %s' % url)
 
-        results = parse(url, download)
+        if retry >= 0:
+            logger.warning('Retry to parse URL: %s' % url)
+            results = parse(url, download, retry=retry-1)
 
     return results
