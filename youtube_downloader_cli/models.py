@@ -1,19 +1,11 @@
 from peewee import *
 from playhouse.sqlite_ext import *
 from os.path import exists, join
-from enum import IntFlag
 from .config import get_storage_path, DATABASE_FILE
 from .translate import translate2chinese as translate
 
 # http://docs.peewee-orm.com/en/latest/peewee/database.html#run-time-database-configuration
 _db_proxy = DatabaseProxy()
-
-class VideoPlatformFlag(IntFlag):
-    'All kinds of platform flags.'
-    Acfun = 1 << 0
-    Bilibili = 1 << 1
-    Youtube = 1 << 2
-
 
 class PeeweeModel(Model):
     class Meta:
