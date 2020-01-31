@@ -5,7 +5,8 @@ from enum import IntFlag
 from .config import get_storage_path, DATABASE_FILE
 from .translate import translate2chinese as translate
 
-SQLITE_DB = SqliteDatabase(DATABASE_FILE)
+# http://docs.peewee-orm.com/en/latest/peewee/database.html#run-time-database-configuration
+_db_proxy = DatabaseProxy()
 
 class VideoPlatformFlag(IntFlag):
     'All kinds of platform flags.'
@@ -16,7 +17,7 @@ class VideoPlatformFlag(IntFlag):
 
 class PeeweeModel(Model):
     class Meta:
-        database = SQLITE_DB
+        database = _db_proxy
 
     @classmethod
     def initialize(cls, data):
@@ -88,7 +89,6 @@ class Video(PeeweeModel):
     description = CharField(null=True)
     categories = JSONField(null=True)
     tags = JSONField(null=True)
-    description = CharField(null=True)
 
     filename = CharField(null=True)
     total_bytes = BigIntegerField(null=True, default=0)
@@ -140,12 +140,6 @@ class Video(PeeweeModel):
 
         return True, None
 
-SQLITE_DB.connect()
-SQLITE_DB.create_tables([
-    Uploader,
-    Playlist,
-    Video,
-])
     def localized_title(self):
         return translate(self.title)
 
@@ -157,3 +151,18 @@ SQLITE_DB.create_tables([
 
     def localized_description(self):
         return translate(self.description)
+
+def setup_database(dbpath):
+    '''Initialize database.'''
+
+    database = SqliteDatabase(dbpath)
+    _db_proxy.initialize(database)
+
+    database.connect(reuse_if_open=True)
+    database.create_tables([
+        Uploader,
+        Playlist,
+        Video,
+    ])
+
+    return database

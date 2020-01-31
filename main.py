@@ -3,6 +3,8 @@
 import coloredlogs, logging, logging.config
 import click
 from youtube_downloader_cli.downloader import parse
+from youtube_downloader_cli.models import setup_database
+from youtube_downloader_cli.config import DATABASE_FILE
 
 # Refer to
 #   1. https://stackoverflow.com/a/7507842/1677041
@@ -73,6 +75,7 @@ def main(no_download, urls):
     """This tool is used to parse and download the youtube videos."""
 
     logger.info('Debug is %s', 'on' if __debug__ else 'off')
+    setup_database(DATABASE_FILE)
 
     for url in urls:
         videos = parse(url, not no_download)
