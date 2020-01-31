@@ -3,6 +3,7 @@ from playhouse.sqlite_ext import *
 from os.path import exists, join
 from enum import IntFlag
 from .config import get_storage_path, DATABASE_FILE
+from .translate import translate2chinese as translate
 
 SQLITE_DB = SqliteDatabase(DATABASE_FILE)
 
@@ -145,3 +146,14 @@ SQLITE_DB.create_tables([
     Playlist,
     Video,
 ])
+    def localized_title(self):
+        return translate(self.title)
+
+    def localized_tags(self):
+        return list(map(translate, self.tags))
+
+    def localized_categories(self):
+        return list(map(translate, self.categories))
+
+    def localized_description(self):
+        return translate(self.description)

@@ -10,6 +10,7 @@ _config = None
 
 CONFIG_FILE = join(_root, 'config')
 DATABASE_FILE = join(_root, 'data.sqlite3')
+TRANSLATION_FILE = join(_root, 'translation')
 
 _SECTION_PROXY = 'PROXY'
 _SECTION_STORAGE = 'STORAGE'
