@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 from youtube_dl import YoutubeDL
 from youtube_dl.utils import DownloadError
 from urllib.parse import urlparse
-from .config import *
+from .config import get_storage_path, get_proxy
 from .models import *
 import os
 import requests
@@ -22,7 +22,7 @@ def download_cover(url, output_dir, prefix, default_extension):
         filepath = os.path.join(output_dir, filename)
 
         if exists(filepath):
-            logger.info('Found existing file here, reusing it...')
+            logger.info('Found existing cover file "%s", reusing it...', filename)
             return filepath, filename
 
         logger.info('Downloading %s' % url)

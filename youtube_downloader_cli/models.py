@@ -1,7 +1,7 @@
 from peewee import *
 from playhouse.sqlite_ext import *
 from os.path import exists, join
-from .config import get_storage_path, DATABASE_FILE
+from .config import get_storage_path
 from .translate import translate2chinese as translate
 
 # http://docs.peewee-orm.com/en/latest/peewee/database.html#run-time-database-configuration
@@ -118,7 +118,7 @@ class Video(PeeweeModel):
         item.save()
         return item
 
-    def check_for_upload(self, flag):
+    def check_for_upload(self):
         'Check condition for upload.'
 
         def check_existence(file):

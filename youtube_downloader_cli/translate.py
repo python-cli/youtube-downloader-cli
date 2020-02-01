@@ -6,7 +6,7 @@ import os
 import json
 
 from requests.exceptions import ProxyError, ConnectTimeout, ConnectionError
-from .config import *
+from .config import get_proxy, TRANSLATION_FILE
 
 logger = logging.getLogger(__name__)
 
