@@ -1,6 +1,7 @@
 from peewee import *
 from playhouse.sqlite_ext import *
 from os.path import exists, join
+from os import remove
 from .config import get_storage_path
 from .translate import translate2chinese as translate
 
@@ -131,6 +132,29 @@ class Video(PeeweeModel):
             return False, 'Invalid video file!'
 
         return True, None
+
+    def remove_cached_file(self):
+        'Remove the downloaded cache files.'
+
+        def remove_file(file):
+            if not file:
+                return False
+
+            filepath = join(get_storage_path(), file)
+
+            if exists(filepath):
+                remove(filepath)
+                return True
+
+            return False
+
+        if remove_file(self.thumbnail):
+            self.thumbnail = None
+
+        if remove_file(self.filename):
+            self.filename = None
+
+        self.save()
 
     def localized_title(self):
         return translate(self.title)
