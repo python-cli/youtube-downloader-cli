@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import coloredlogs, logging, logging.config
+from datetime import datetime
 import click
-from youtube_downloader_cli.downloader import parse
+from youtube_downloader_cli.downloader import YTDownloader
 from youtube_downloader_cli.models import setup_database
 from youtube_downloader_cli.config import DATABASE_FILE
 
@@ -68,17 +69,24 @@ logging.config.dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger(__name__)
 
 @click.command()
-@click.option('--no-download', default=False, type=click.BOOL,
-              help='Whether download video or not.')
+@click.option('--download', '-d', default=False, type=click.BOOL,
+              help='Whether download video or not, defaults to NO.')
 @click.argument('urls', type=click.STRING, nargs=-1)
-def main(no_download, urls):
+def main(download, urls):
     """This tool is used to parse and download the youtube videos."""
 
     logger.info('Debug is %s', 'on' if __debug__ else 'off')
     setup_database(DATABASE_FILE)
 
+    def filter_video(video):
+        'Filter the uploaded date less than last 3 years.'
+        upload_date = datetime.strptime(video.upload_date, '%Y%m%d')
+        date_delta = upload_date - datetime.now()
+        return date_delta.days <= 365 * 3
+
     for url in urls:
-        videos = parse(url, not no_download)
+        downloader = YTDownloader(download=download, filter_func=filter_video)
+        videos = downloader.parse(url)
         [logger.debug('Result: %s' % video) for video in videos]
 
 if __name__ == '__main__':
