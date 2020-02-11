@@ -90,7 +90,7 @@ class Video(PeeweeModel):
     playlist = ForeignKeyField(Playlist, backref='videos', null=True)
 
     def __str__(self):
-        return 'id: %s, title: %s' % (self.id, self.title)
+        return 'id: %s, title: %s, date: %s' % (self.id, self.title, self.upload_date)
 
     @classmethod
     def initialize(cls, data):
@@ -98,6 +98,7 @@ class Video(PeeweeModel):
 
         item, _ = cls.get_or_create(id=data.get('id'))
         item.title = data.get('title')
+        item.url = data.get('url')
         item.webpage_url = data.get('webpage_url')
         item.duration = data.get('duration')
         item.width = data.get('width')

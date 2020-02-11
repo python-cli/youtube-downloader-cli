@@ -66,6 +66,7 @@ class YTDownloader(object):
             with YoutubeDL(ydl_opts) as ydl:
                 logger.info('Parsing url: %s', url)
                 meta = ydl.extract_info(url, download=self.download)
+                logger.debug('meta data: %s', meta)
                 extractor = meta.get('extractor')
 
                 if extractor == 'youtube:playlist':
@@ -99,8 +100,8 @@ class YTDownloader(object):
                         logger.info('Skipping video: %s', video)
                 else:
                     logger.warning('Unknown extractor: %s' % extractor)
-        except DownloadError as e:
-            logger.exception(e)
+        except (requests.RequestException, DownloadError) as e:
+            logger.exception('Encounter an exception [%s] when parsing url [%s], download option: %s', e, url, 'YES' if self.download else 'NO')
 
             if retry > 0:
                 logger.warning('Retry to parse URL: %s' % url)
@@ -120,10 +121,13 @@ class YTDownloader(object):
             video_id = entry.get('id')
             video_url = 'https://youtu.be/%s' % video_id
 
-            for video in self.parse(video_url):
-                video.playlist = playlist
-                video.save()
-                results.append(video)
+            videos = self.parse(video_url)
+            assert len(videos) == 1
+            video = videos[0]
+
+            video.playlist = playlist
+            video.save()
+            results.append(video)
 
         return results
 
@@ -162,7 +166,7 @@ class YTDownloader(object):
                 logger.warning('Retry to parse URL: %s' % url)
                 filepath, filename = self._download_cover(url, prefix, default_extension, retry-1)
             else:
-                logger.exception(e)
+                logger.exception('Encounter an exception [%s] when downloading cover [%s]', e, url)
                 filepath = None
 
         return filepath, filename

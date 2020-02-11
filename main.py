@@ -2,6 +2,7 @@
 
 import coloredlogs, logging, logging.config
 from datetime import datetime
+from functools import partial
 import click
 from youtube_downloader_cli.downloader import YTDownloader
 from youtube_downloader_cli.models import setup_database
@@ -68,9 +69,11 @@ LOGGING_CONFIG = {
 logging.config.dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger(__name__)
 
+click.option = partial(click.option, show_default=True)
+
 @click.command()
 @click.option('--download', '-d', default=False, type=click.BOOL,
-              help='Whether download video or not, defaults to NO.')
+              help='Whether download video or not.')
 @click.argument('urls', type=click.STRING, nargs=-1)
 def main(download, urls):
     """This tool is used to parse and download the youtube videos."""
