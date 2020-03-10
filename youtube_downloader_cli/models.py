@@ -172,7 +172,9 @@ class Video(PeeweeModel):
 def setup_database(dbpath):
     '''Initialize database.'''
 
-    database = SqliteDatabase(dbpath)
+    database = SqliteDatabase(dbpath, pragmas={
+        'journal_mode': 'wal',
+    })
     _db_proxy.initialize(database)
 
     database.connect(reuse_if_open=True)

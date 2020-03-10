@@ -72,7 +72,7 @@ logger = logging.getLogger(__name__)
 click.option = partial(click.option, show_default=True)
 
 @click.command()
-@click.option('--download', '-d', default=False, type=click.BOOL,
+@click.option('--download', '-d', default=False, is_flag=True, type=click.BOOL,
               help='Whether download video or not.')
 @click.argument('urls', type=click.STRING, nargs=-1)
 def main(download, urls):
