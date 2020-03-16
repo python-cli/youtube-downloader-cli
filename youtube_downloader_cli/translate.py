@@ -51,4 +51,4 @@ def translate2chinese(text, retry=10, cache=True):
         with open(TRANSLATION_FILE, 'w') as f:
             json.dump(cached_dict, f, sort_keys=True, indent=4)
 
-    return result
+    return result or text
