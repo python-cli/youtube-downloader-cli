@@ -21,12 +21,12 @@ setup(
     python_requires='>=3',
     packages=['youtube_downloader_cli'],
     install_requires=[
-        'click==7.0',
-        'configparser==4.0.2',
-        'peewee==3.11.2',
-        'requests==2.22.0',
-        'youtube-dl==2020.1.15',
-        'googletrans==2.4.0',
+        'click>=7.0',
+        'configparser>=4.0',
+        'peewee>=3.11',
+        'requests>=2.22',
+        'youtube-dl>=2020.1.15',
+        'googletrans>=2.4',
     ],
     entry_points={
         'console_scripts': ['youtube-downloader-cli=main'],
