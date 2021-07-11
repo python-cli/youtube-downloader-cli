@@ -67,38 +67,23 @@ class YTDownloader(object):
             with YoutubeDL(ydl_opts) as ydl:
                 logger.info('Parsing url: %s', url)
                 meta = ydl.extract_info(url, download=self.download)
-                logger.debug('meta data: %s', meta)
                 extractor = meta.get('extractor')
 
                 if extractor == 'youtube:playlist':
                     results.extend(self._parse_playlist(meta))
-                elif extractor == 'youtube:channel' or extractor == 'youtube:user':
+                elif extractor == 'youtube:tab':
+                    results.extend(self._parse_tab(meta))
+                elif extractor in ('youtube:channel', 'youtube:user'):
                     results.extend(self._parse_channel(meta))
                 elif extractor == 'youtube':
-                    video = Video.initialize(meta)
-                    valid = True
+                    video = self._parse_video(meta)
 
-                    if self.filter_func:
-                        valid = self.filter_func(video)
-
-                    if self.download and output_filename:
+                    if video and output_filename:
                         video.filename = output_filename
                         video.total_bytes = output_total_bytes
                         video.save()
 
-                    if self.download and 'http' in video.thumbnail:
-                        _, filename = self._download_cover(video.thumbnail, video.id, 'jpg')
-                        video.thumbnail = filename
-                        video.save()
-
-                    if valid:
-                        logger.info('Found video: %s', video)
-                        results.append(video)
-                    elif self.download:
-                        logger.info('Remove the downloaded files of invalid video: %s', video)
-                        video.remove_cached_file()
-                    else:
-                        logger.info('Skipping video: %s', video)
+                    results.append(video)
                 else:
                     logger.warning('Unknown extractor: %s' % extractor)
         except (requests.RequestException, DownloadError) as e:
@@ -113,6 +98,7 @@ class YTDownloader(object):
 
     def _parse_playlist(self, meta):
         'Parse the playlist result.'
+        logger.debug('Found playlist meta data: %s', meta)
 
         results = []
         playlist = Playlist.initialize(meta)
@@ -132,11 +118,61 @@ class YTDownloader(object):
 
         return results
 
+    def _parse_tab(self, meta):
+        'Parse the tab result.'
+        logger.debug('Found tab meta data: %s', meta)
+
+        results = []
+        playlist = Playlist.initialize(meta)
+        logger.info('Parse playlist: %s', playlist)
+
+        for entry in meta.get('entries'):
+            video_url = entry.get('url')
+
+            videos = self.parse(video_url)
+            assert len(videos) == 1
+            video = videos[0]
+
+            video.playlist = playlist
+            video.save()
+            results.append(video)
+
+        return results
+
     def _parse_channel(self, meta):
-        'Parse the playlist result.'
+        'Parse the channel result.'
+        logger.debug('Found channel meta data: %s', meta)
+
+        assert(meta.get('_type') == 'playlist')
         url = meta.get('url')
         logger.info('Parse channel list: %s', url)
         return self.parse(url)
+
+    def _parse_video(self, meta):
+        'Parse the specified single video.'
+        # logger.debug('Found video meta data: %s', meta)
+
+        video = Video.initialize(meta)
+        valid = True
+
+        if self.filter_func:
+            valid = self.filter_func(video)
+
+        if self.download and 'http' in video.thumbnail:
+            _, filename = self._download_cover(video.thumbnail, video.id, 'jpg')
+            video.thumbnail = filename
+            video.save()
+
+        if valid:
+            logger.info('Found video: %s', video)
+            return video
+        elif self.download:
+            logger.info('Remove the downloaded files of invalid video: %s', video)
+            video.remove_cached_file()
+        else:
+            logger.info('Skipping video: %s', video)
+
+        return None
 
     def _download_cover(self, url, prefix, default_extension, retry=10):
         try:
