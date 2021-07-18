@@ -45,6 +45,8 @@ def translate2chinese(text, retry=10, cache=True):
         if retry >= 0:
             time.sleep(5)
             result = translate2chinese(text, retry=retry-1)
+    except AttributeError as e:
+        pass
     except Exception as e:
         logger.exception(e)
 
