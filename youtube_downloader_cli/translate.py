@@ -35,7 +35,10 @@ def translate2chinese(text, retry=10, cache=True):
 
     try:
         logger.debug('translating [%s]', text)
-        result = translator.translate(text, dest='zh-cn').text
+        result = translator.translate(text, dest='zh-cn')
+
+        if result:
+            result = result.text
     except (ProxyError, ConnectTimeout, ConnectionError) as e:
         logger.error('Connection error!')
 
