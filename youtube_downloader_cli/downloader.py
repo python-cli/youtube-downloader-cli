@@ -42,7 +42,7 @@ class YTDownloader(object):
             if d['status'] != 'finished':
                 return
 
-            logger.info('Download completed with info: %s' % d)
+            logger.info(f'Download completed with info: {d}')
 
             nonlocal output_filename, output_total_bytes
             head, tail = os.path.split(d.get('filename'))
@@ -65,7 +65,7 @@ class YTDownloader(object):
 
         try:
             with YoutubeDL(ydl_opts) as ydl:
-                logger.info('Parsing url: %s', url)
+                logger.info(f'Parsing url: {url}')
                 meta = ydl.extract_info(url, download=self.download)
                 extractor = meta.get('extractor')
 
@@ -85,12 +85,12 @@ class YTDownloader(object):
 
                     results.append(video)
                 else:
-                    logger.warning('Unknown extractor: %s' % extractor)
+                    logger.warning(f'Unknown extractor: {extractor}')
         except (requests.RequestException, DownloadError) as e:
-            logger.exception('Encounter an exception [%s] when parsing url [%s], download option: %s', e, url, 'YES' if self.download else 'NO')
+            logger.exception(f'Encounter an exception [{e}] when parsing url [{url}], download option: {self.download}')
 
             if retry > 0:
-                logger.warning('Retry to parse URL: %s' % url)
+                logger.warning(f'Retry to parse URL: {url}')
                 results = self.parse(url, retry=retry-1)
 
         self._result_videos = results
@@ -98,16 +98,20 @@ class YTDownloader(object):
 
     def _parse_playlist(self, meta):
         'Parse the playlist result.'
-        logger.debug('Found playlist meta data: %s', meta)
+        logger.debug(f'Found playlist meta data: {meta}')
 
         results = []
         playlist = Playlist.initialize(meta)
-        logger.info('Parse playlist: %s', playlist)
+        entries = meta.get('entries', [])
+        count = len(entries)
+        logger.info(f'Parse playlist: {playlist}, entry count: {count}')
 
-        for entry in meta.get('entries'):
+        for i in range(count):
+            entry = entries[i]
             video_id = entry.get('id')
             video_url = 'https://youtu.be/%s' % video_id
 
+            logger.debug(f'Start parsing entry {i}:')
             videos = self.parse(video_url)
             assert len(videos) == 1
             video = videos[0]
@@ -116,41 +120,46 @@ class YTDownloader(object):
             video.save()
             results.append(video)
 
+        logger.debug(f'Finish parsing playlist with {len(results)} video(s).')
         return results
 
     def _parse_tab(self, meta):
         'Parse the tab result.'
-        logger.debug('Found tab meta data: %s', meta)
+        logger.debug(f'Found tab meta data: {meta}')
 
         results = []
         playlist = Playlist.initialize(meta)
-        logger.info('Parse playlist: %s', playlist)
+        entries = meta.get('entries', [])
+        count = len(entries)
+        logger.info(f'Parse tab playlist: {playlist}, entry count: {count}')
 
-        for entry in meta.get('entries'):
+        for i in range(count):
+            entry = entries[i]
             video_url = entry.get('url')
 
+            logger.debug(f'Start parsing entry {i}:')
             videos = self.parse(video_url)
-            assert len(videos) == 1
-            video = videos[0]
 
-            video.playlist = playlist
-            video.save()
-            results.append(video)
+            for video in videos:
+                video.playlist = playlist
+                video.save()
+                results.append(video)
 
+        logger.debug(f'Finish parsing tab with {len(results)} video(s).')
         return results
 
     def _parse_channel(self, meta):
         'Parse the channel result.'
-        logger.debug('Found channel meta data: %s', meta)
+        logger.debug(f'Found channel meta data: {meta}')
 
         assert(meta.get('_type') == 'playlist')
         url = meta.get('url')
-        logger.info('Parse channel list: %s', url)
+        logger.info(f'Parse channel list: {url}')
         return self.parse(url)
 
     def _parse_video(self, meta):
         'Parse the specified single video.'
-        # logger.debug('Found video meta data: %s', meta)
+        logger.debug(f'Found video meta data: {meta.get("url")}')
 
         video = Video.initialize(meta)
         valid = True
@@ -164,13 +173,13 @@ class YTDownloader(object):
             video.save()
 
         if valid:
-            logger.info('Found video: %s', video)
+            logger.info(f'Found video: {video}')
             return video
         elif self.download:
-            logger.info('Remove the downloaded files of invalid video: %s', video)
+            logger.info(f'Remove the downloaded files of invalid video: {video}')
             video.remove_cached_file()
         else:
-            logger.info('Skipping video: %s', video)
+            logger.info(f'Skipping video: {video}')
 
         return None
 
