@@ -1,6 +1,5 @@
 import logging
-import googletrans
-import requests
+import translate
 import time
 import os
 import json
@@ -28,17 +27,10 @@ def translate2chinese(text, retry=10, cache=True):
     if result:
         return result
 
-    translator = googletrans.Translator(proxies={
-        'http': get_proxy(),
-        'https': get_proxy(),
-    }, timeout=60)
+    translator = translate.Translator(to_lang="zh")
 
     try:
-        logger.debug('translating [%s]', text)
-        result = translator.translate(text, dest='zh-cn')
-
-        if result:
-            result = result.text
+        result = translator.translate(text)
     except (ProxyError, ConnectTimeout, ConnectionError) as e:
         logger.error('Connection error!')
 
@@ -56,4 +48,5 @@ def translate2chinese(text, retry=10, cache=True):
         with open(TRANSLATION_FILE, 'w') as f:
             json.dump(cached_dict, f, sort_keys=True, indent=4)
 
+    logger.debug(f'translate [{text}] to [{result}]')
     return result or text

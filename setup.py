@@ -26,7 +26,7 @@ setup(
         'peewee>=3.11',
         'requests>=2.22',
         'youtube-dl>=2020.1.15',
-        'googletrans>=2.4',
+        'translate==3.6.1',
     ],
     entry_points={
         'console_scripts': ['youtube-downloader-cli=main'],
